@@ -28,6 +28,9 @@ button { touch-action: manipulation; cursor: default; }
 .st { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .st[data-state="disconnected"], .st[data-state="unpaired"] { color: var(--danger); }
 .st[data-busy] { color: var(--ink); }
+/* an error is read in full: it wraps, and the strip grows to hold it */
+.status:has(.st[data-state="unpaired"]), .status:has(.st[data-state="disconnected"]) { height: auto; min-height: var(--statusbar-h); padding-block: 6px; }
+.st[data-state="disconnected"], .st[data-state="unpaired"] { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; user-select: text; }
 .pair { flex: none; height: var(--btn-xs); padding: 0 12px; border-radius: var(--r-ctl); background: var(--well); color: var(--ink); }
 .pair:active { background: var(--raise); }
 

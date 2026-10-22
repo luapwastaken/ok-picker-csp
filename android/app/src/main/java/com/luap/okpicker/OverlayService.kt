@@ -79,6 +79,8 @@ class OverlayService : Service(), CspListener {
     private var panelOpen = false // the panel is out (the square always shows, when anything does)
     private var cspFront = true // Clip Studio is on screen; stays true without Usage access
     private var capturing = false // reading CSP's QR: nothing of ours on screen
+    private var pairNote: String? = null // why the last pairing failed, shown while unpaired
+    private val events = ArrayDeque<String>() // pairing and connection changes, for Send report
     private var watch: CspWatch? = null
     private var outsideAt = 0L
     private var iconDownAt = 0L
@@ -123,6 +125,7 @@ class OverlayService : Service(), CspListener {
             ACTION_HIDE -> hideAll()
             ACTION_STOP -> stopSelf()
             ACTION_PAIRED -> connect()
+            ACTION_PAIR_FAILED -> { pairFailed(intent.getStringExtra(EXTRA_WHY) ?: "no reason given"); connect() }
             ACTION_PAIR_CAPTURE -> capture(intent.getIntExtra(EXTRA_CODE, 0), intent.getParcelableExtra(EXTRA_DATA, Intent::class.java))
         }
         return START_STICKY
@@ -161,17 +164,41 @@ class OverlayService : Service(), CspListener {
 
     override fun onConnection(state: ConnectionState) = main.post {
         if (destroyed) return@post
+        if (state == ConnectionState.Connected) pairNote = null
         status = when (state) {
-            ConnectionState.Unpaired -> JSONObject().put("state", "unpaired")
+            // the last pairing's failure stays on screen until a pairing works
+            ConnectionState.Unpaired -> JSONObject().put("state", "unpaired").apply { pairNote?.let { put("detail", it) } }
             ConnectionState.Connecting -> JSONObject().put("state", "connecting")
             ConnectionState.Connected -> JSONObject().put("state", "connected")
-            is ConnectionState.Refused -> JSONObject().put("state", "unpaired").put("detail", "CSP refused: ${state.reason}. Pair again.")
-            is ConnectionState.Disconnected -> JSONObject().put("state", "disconnected").put("detail", state.reason)
+            is ConnectionState.Refused -> JSONObject().put("state", "unpaired")
+                .put("detail", "CSP refused the login (${state.reason}). Open Connect to smartphone in CSP and Pair again.")
+            is ConnectionState.Disconnected -> JSONObject().put("state", "disconnected").put("detail", lost(state.reason))
         }
         Log.i(TAG, "connection: $status")
+        event("${status.optString("state")}${status.optString("detail").let { if (it.isEmpty()) "" else ": $it" }}")
         js("onStatus", status.toString())
         notifyStatus()
     }.let {}
+
+    /** a lost or failed connection in words, with the system's own message kept for reports */
+    private fun lost(raw: String) = when {
+        "ECONNREFUSED" in raw -> "CSP isn't accepting the picker (connection refused on port ${store.port}). Is CSP open? After a restart of CSP, open Connect to smartphone once."
+        "ETIMEDOUT" in raw || "timed out" in raw || "after 3000ms" in raw -> "CSP didn't answer in time ($raw)"
+        "ENETUNREACH" in raw || "EHOSTUNREACH" in raw -> "No network route to CSP ($raw)"
+        "reset" in raw || "closed" in raw || "EOF" in raw -> "CSP closed the connection ($raw). Tapping the phone icon in CSP does this; then Pair again."
+        else -> "Lost CSP: $raw"
+    }
+
+    private fun event(what: String) {
+        events.addLast("${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())} $what")
+        while (events.size > 40) events.removeFirst()
+    }
+
+    private fun pairFailed(why: String) {
+        pairNote = "Pairing failed: $why."
+        Log.w(TAG, pairNote!!)
+        event(pairNote!!)
+    }
 
     override fun onColor(state: ColorState) = main.post {
         if (destroyed) return@post
@@ -203,21 +230,19 @@ class OverlayService : Service(), CspListener {
         capturing = true // nothing of ours may cover the QR
         applyVisibility()
         main.postDelayed({
-            QrCapture.capture(this, code, data) { url ->
+            QrCapture.capture(this, code, data) { result ->
                 main.post {
                     if (destroyed) return@post
                     foreground(ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
                     capturing = false
                     if (hidden) applyVisibility() else showPanel(true)
-                    val qr = url?.let { runCatching { QrConfig.parse(it) }.getOrNull() }
-                    if (qr == null) {
-                        js("onStatus", JSONObject().put("state", "unpaired")
-                            .put("detail", "No CSP QR on screen. Open Connect to smartphone in CSP, then Pair.").toString())
-                        connect()
-                    } else {
-                        store.saveQr(qr)
-                        connect()
+                    when (result) {
+                        is QrCapture.Result.Failed -> pairFailed(result.why)
+                        is QrCapture.Result.Found -> runCatching { QrConfig.parse(result.url) }
+                            .onSuccess { store.saveQr(it); pairNote = null; event("paired from CSP's QR (port ${it.port})") }
+                            .onFailure { pairFailed("CSP's QR code didn't decode (${it.message})") }
                     }
+                    connect() // the new pairing, or the old one again, or Unpaired with the reason
                 }
             }
         }, 400) // let the consent dialog fade out first
@@ -589,9 +614,9 @@ class OverlayService : Service(), CspListener {
             startActivity(Intent(this@OverlayService, PairActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }.let {}
 
+        // works unpaired too: that is when a report is wanted most
         @JavascriptInterface fun sendReport() = main.post {
-            val c = client
-            if (c != null) Report.share(this@OverlayService, c.log, spec, status.toString())
+            Report.share(this@OverlayService, client?.log, spec, status.toString(), events.toList())
         }.let {}
 
         @JavascriptInterface fun focus(on: Boolean) = main.post { setFocusable(on) }.let {}
@@ -628,6 +653,8 @@ class OverlayService : Service(), CspListener {
         const val ACTION_PAIR_CAPTURE = "com.luap.okpicker.PAIR_CAPTURE"
         /** From PairActivity: PairStore already holds a QR read from a screenshot. */
         const val ACTION_PAIRED = "com.luap.okpicker.PAIRED"
+        const val ACTION_PAIR_FAILED = "com.luap.okpicker.PAIR_FAILED"
+        const val EXTRA_WHY = "why"
         const val EXTRA_CODE = "code"
         const val EXTRA_DATA = "data"
         private const val CHANNEL = "ok"

@@ -34,23 +34,32 @@ class PairActivity : Activity() {
                     finish()
                 } else AlertDialog.Builder(this).setMessage("Pick a screenshot of CSP's QR instead?")
                     .setPositiveButton("Pick") { _, _ -> startActivityForResult(Intent(MediaStore.ACTION_PICK_IMAGES), REQ_PICK) }
-                    .setNegativeButton("Cancel") { _, _ -> finish() }
-                    .setOnCancelListener { finish() }.show()
+                    .setNegativeButton("Cancel") { _, _ -> failed("the screen capture was not allowed, and no screenshot was picked") }
+                    .setOnCancelListener { failed("the screen capture was not allowed, and no screenshot was picked") }.show()
             REQ_PICK -> {
                 val uri = data?.data
-                val qr = if (res == RESULT_OK && uri != null) runCatching {
+                if (res != RESULT_OK || uri == null) return failed("no screenshot was picked")
+                val why = runCatching {
                     val bmp = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri)) { d, _, _ ->
                         d.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                     }
-                    QrCapture.decode(bmp)?.let { QrConfig.parse(it) }
-                }.getOrNull() else null
-                if (qr != null) {
-                    PairStore(this).saveQr(qr)
-                    startService(Intent(this, OverlayService::class.java).setAction(OverlayService.ACTION_PAIRED))
-                } else if (res == RESULT_OK) Toast.makeText(this, "No Clip Studio QR found in that picture", Toast.LENGTH_LONG).show()
+                    when (val r = QrCapture.decode(bmp)) {
+                        is QrCapture.Result.Failed -> r.why
+                        is QrCapture.Result.Found -> { PairStore(this).saveQr(QrConfig.parse(r.url)); null }
+                    }
+                }.getOrElse { "the screenshot couldn't be read (${it.javaClass.simpleName}: ${it.message})" }
+                if (why != null) return failed(why)
+                startService(Intent(this, OverlayService::class.java).setAction(OverlayService.ACTION_PAIRED))
                 finish()
             }
         }
+    }
+
+    /** the panel shows why, and Send report keeps it */
+    private fun failed(why: String) {
+        Toast.makeText(this, "Pairing failed: $why", Toast.LENGTH_LONG).show()
+        startService(Intent(this, OverlayService::class.java).setAction(OverlayService.ACTION_PAIR_FAILED).putExtra(OverlayService.EXTRA_WHY, why))
+        finish()
     }
 
     private companion object {

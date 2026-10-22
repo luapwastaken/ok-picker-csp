@@ -9,7 +9,7 @@ import com.luap.cspremote.PacketLog
 object Report {
     private const val CSP = "jp.co.celsys.clipstudiopaint.googleplay"
 
-    fun share(context: Context, log: PacketLog, spec: String?, status: String) {
+    fun share(context: Context, log: PacketLog?, spec: String?, status: String, events: List<String>) {
         val pm = context.packageManager
         val app = runCatching { pm.getPackageInfo(context.packageName, 0).versionName }.getOrNull()
         val csp = runCatching { pm.getPackageInfo(CSP, 0).versionName }.getOrNull() ?: "not installed"
@@ -22,7 +22,10 @@ object Report {
             "Status: $status",
             "",
             "Log (last 400 lines):",
-            log.text().lines().takeLast(400).joinToString("\n"),
+            "Pairing and connection (last ${events.size}):",
+            events.joinToString("\n").ifEmpty { "none" },
+            "",
+            log?.text()?.lines()?.takeLast(400)?.joinToString("\n") ?: "(no connection, so no packets)",
         ).joinToString("\n")
         val send = Intent(Intent.ACTION_SEND).setType("text/plain")
             .putExtra(Intent.EXTRA_SUBJECT, "OK Picker report").putExtra(Intent.EXTRA_TEXT, text)
