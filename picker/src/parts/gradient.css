@@ -38,3 +38,5 @@
 /* chips fill their cell (a row of 5 spans the width, level with the bar and the value strip) */
 .grows .chip { aspect-ratio: auto; height: 34px; max-height: none; }
 .kept .chip { aspect-ratio: auto; height: 24px; max-height: none; }
+.kexport { display: flex; gap: 6px; margin-top: 8px; }
+.kexport .gwide { flex: 1; width: auto; margin-top: 0; }

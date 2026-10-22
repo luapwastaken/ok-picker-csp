@@ -82,7 +82,7 @@ The panel:
 
 - **Gradient**: a smooth OKLab blend between two colours. The ends start as CSP's main and sub colour; tap an end to set it from the current, main or sub colour. Drag along the bar to mix live, or tap a step. ⋯ has the number of steps, the path (straight through OKLab, or round the hue wheel the short or long way), swap ends and the midpoint. Drag the ◆ under the bar to push the blend toward one end.
 - **Ramp**: from one colour, a highlight-to-shadow ramp that warms toward the light and cools into the shadow, with even value steps.
-- **Keep** saves the steps to Kept colours. **Export colour set…** there sends an `.aco` file through the share sheet; save it, then in CSP's Color Set palette use Import color set.
+- **Keep** saves the steps to Kept colours (it switches that part on if it's off). **Save colour set…** (in Kept colours, or ⋯ in the gradient) saves an `.aco` file to the tablet, Downloads by default; then in CSP's Color Set palette use Import color set. **Share…** sends the file to another app instead.
 
 Colours you change in CSP's own colour panel, Color Set, history or eyedropper update the picker. The picker starts by itself when the tablet starts. With Usage access on, it shows only while CSP is in front.
 

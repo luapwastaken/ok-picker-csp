@@ -19,6 +19,7 @@ export type AndroidBridge = {
   setDisplay(mode: string): void;
   eyedropper?(on: boolean): void;
   share?(name: string, mime: string, base64: string): void;
+  save?(name: string, mime: string, base64: string): void;
   ready?(): void;
 };
 
@@ -40,7 +41,7 @@ function mock(): AndroidBridge {
     if (fn !== 'setColor' && fn !== 'dragTitle' && fn !== 'resize') console.log('[mock bridge]', fn, ...args);
   };
   return Object.fromEntries(
-    ['setColor', 'copy', 'frame', 'dragTitle', 'resize', 'pair', 'sendReport', 'setDisplay', 'eyedropper', 'share', 'ready'].map((k) => [k, rec(k)]),
+    ['setColor', 'copy', 'frame', 'dragTitle', 'resize', 'pair', 'sendReport', 'setDisplay', 'eyedropper', 'share', 'save', 'ready'].map((k) => [k, rec(k)]),
   ) as AndroidBridge;
 }
 
@@ -71,5 +72,7 @@ export const bridge = {
   eyedropper: (on: boolean) => call('eyedropper', on),
   /** a file through Android's share sheet (a colour set for CSP): its bytes as base64 */
   share: (name: string, mime: string, base64: string) => call('share', name, mime, base64),
+  /** the same through Android's Save dialog, so the file lands on the tablet */
+  save: (name: string, mime: string, base64: string) => call('save', name, mime, base64),
   ready: () => call('ready'),
 };

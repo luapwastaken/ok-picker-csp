@@ -48,6 +48,12 @@
 
         <!-- Asks for the one-frame screen capture (or a screenshot) without bringing a task over CSP. -->
         <activity
+            android:name=".SaveActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
             android:name=".PairActivity"
             android:excludeFromRecents="true"
             android:exported="false"

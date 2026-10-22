@@ -109,6 +109,20 @@ const during = await fit();
 assert.ok(during > before, `fit grows with the sheet (${before} -> ${during})`);
 ok(`compact: the window grows for the sheet (${before} -> ${during} px)`);
 
+// 9. Keep shows Kept colours when it is off, and ⋯ saves the steps when nothing is kept
+await page.evaluate(() => { localStorage.clear(); localStorage.setItem('cspPicker.parts', JSON.stringify({ full: { order: ['area', 'gradient', 'kept', 'hex', 'styles', 'numbers', 'sliders', 'holds', 'recent', 'tints', 'harmonies'], on: ['area', 'gradient', 'hex'] } })); });
+await open();
+await page.evaluate(() => window.cspPicker.onSubColor({ r: 59, g: 78, b: 140 })); await settle();
+await clear();
+await page.click('[aria-label="Gradient options"]'); await settle(150);
+await menuItem('Save colour set');
+const saved = (await calls('save')).pop();
+assert.ok(saved && Buffer.from(saved[2], 'base64').readUInt16BE(2) >= 3, 'nothing kept: ⋯ saves the steps');
+assert.ok(!(await has('.kept')), 'Kept is off');
+await page.evaluate(() => [...document.querySelectorAll('.ghead button')].find((b) => b.textContent === 'Keep').click()); await settle();
+assert.ok(await has('.kept') && (await page.$$('.krow')).length === 1, 'Keep switched Kept colours on');
+ok('Keep shows Kept colours; ⋯ Save colour set works with nothing kept');
+
 assert.deepEqual(errors, [], errors.join('; '));
 ok('no console errors');
 console.log('PASS');

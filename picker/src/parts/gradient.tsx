@@ -10,7 +10,8 @@ import type { MaterialId, RampSpec } from 'dt:shared/types.ts';
 import { menu, type MenuItem } from 'dt:renderer/ui/menu.ts';
 import { Chips } from './chips.tsx';
 import { MID_MAX, MID_MIN, mixAt, stepsOf, type Path } from './gradient-math.ts';
-import { keep, makeStore } from './kept-store.ts';
+import { exportColourSet, keep, makeStore } from './kept-store.ts';
+import { partsState, togglePart } from './store.ts';
 import type { PartProps, Rgb } from './types.ts';
 import './gradient.css';
 
@@ -151,15 +152,28 @@ export function GradientPart(p: PartProps) {
   }, [p.main, p.sub]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const a = s.a ?? fromRgb(p.main), b = s.b ?? (p.sub ? fromRgb(p.sub) : WHITE);
-  const keepRow = () => (s.mode === 'gradient' ? keep('Gradient', stepsOf(a, b, s.steps, s.path, s.mid)) : keep('Ramp', rampOf(s, s.base ?? p.value)));
+  const steps = () => (s.mode === 'gradient' ? stepsOf(a, b, s.steps, s.path, s.mid) : rampOf(s, s.base ?? p.value));
+  const name = s.mode === 'gradient' ? ('Gradient' as const) : ('Ramp' as const);
+  // what is kept must show: Keep switches on Kept colours when it is off
+  const keepRow = () => {
+    keep(name, steps());
+    if (!partsState()[p.layout].on.includes('kept')) togglePart(p.layout, 'kept');
+  };
+  // saving: the kept rows, or these steps when nothing is kept yet
+  const exportItems: MenuItem[] = [
+    { label: 'Save colour set…', onSelect: () => exportColourSet('save', { name, colours: steps() }) },
+    { label: 'Share colour set…', onSelect: () => exportColourSet('share', { name, colours: steps() }) },
+  ];
   const more = (e: MouseEvent<HTMLButtonElement>) =>
-    openMenu(e.currentTarget, [
+    openMenu(e.currentTarget, s.mode === 'gradient' ? [
       { label: 'Steps', submenu: [3, 5, 7, 9, 12].map((n) => ({ label: String(n), checked: n === s.steps, onSelect: () => store.set({ steps: n }) })) },
       { label: 'Path', submenu: PATHS.map(([v, l]) => ({ label: l, checked: v === s.path, onSelect: () => store.set({ path: v }) })) },
       'separator',
       { label: 'Swap ends', onSelect: () => store.set({ a: b, b: a }) },
       { label: 'Reset midpoint', onSelect: () => store.set({ mid: 0.5 }) },
-    ]);
+      'separator',
+      ...exportItems,
+    ] : exportItems);
 
   return (
     <div className="gr">
@@ -169,7 +183,7 @@ export function GradientPart(p: PartProps) {
             <button key={m} type="button" role="radio" aria-checked={s.mode === m} onClick={() => store.set({ mode: m })}>{m === 'gradient' ? 'Gradient' : 'Ramp'}</button>
           ))}
         </div>
-        {s.mode === 'gradient' && <button type="button" className="gbtn gicon" aria-label="Gradient options" title="Steps, path, swap, midpoint" onClick={more}><DotsThree size={18} weight="bold" /></button>}
+        <button type="button" className="gbtn gicon" aria-label="Gradient options" title={s.mode === 'gradient' ? 'Steps, path, swap, midpoint, save' : 'Save colour set'} onClick={more}><DotsThree size={18} weight="bold" /></button>
         <button type="button" className="gbtn" onClick={keepRow}>Keep</button>
       </div>
       {s.mode === 'gradient' ? <GradientBody p={p} s={s} /> : <RampBody p={p} s={s} />}

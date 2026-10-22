@@ -194,6 +194,22 @@ class OverlayService : Service(), CspListener {
         while (events.size > 40) events.removeFirst()
     }
 
+    /** the page's bytes as a file in the cache; only the latest stays */
+    private fun cacheFile(name: String, base64: String): File {
+        if (base64.length > MAX_SHARE * 4 / 3 + 8) error("the file is over ${MAX_SHARE / 1024} KB")
+        val bytes = Base64.decode(base64, Base64.DEFAULT)
+        if (bytes.size > MAX_SHARE) error("the file is over ${MAX_SHARE / 1024} KB")
+        val dir = File(cacheDir, "share").apply { deleteRecursively(); mkdirs() }
+        return File(dir, name.replace(Regex("[^A-Za-z0-9._ -]"), "_").trimStart('.').ifEmpty { "file" }).apply { writeBytes(bytes) }
+    }
+
+    private fun failedFile(what: String, e: Throwable) {
+        val msg = "$what: ${e.message ?: e.javaClass.simpleName}"
+        Log.w(TAG, msg)
+        event(msg)
+        android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_LONG).show()
+    }
+
     private fun pairFailed(why: String) {
         pairNote = "Pairing failed: $why."
         Log.w(TAG, pairNote!!)
@@ -591,17 +607,22 @@ class OverlayService : Service(), CspListener {
         // A file from the page (an .aco colour set) to the share sheet, via the cache + FileProvider.
         @JavascriptInterface fun share(name: String, mime: String, base64: String) = main.post {
             runCatching {
-                if (base64.length > MAX_SHARE * 4 / 3 + 8) error("over ${MAX_SHARE / 1024} KB")
-                val bytes = Base64.decode(base64, Base64.DEFAULT)
-                if (bytes.size > MAX_SHARE) error("over ${MAX_SHARE / 1024} KB")
-                val dir = File(cacheDir, "share").apply { deleteRecursively(); mkdirs() } // only the latest file stays
-                val file = File(dir, name.replace(Regex("[^A-Za-z0-9._-]"), "_").trimStart('.').ifEmpty { "file" }).apply { writeBytes(bytes) }
+                val file = cacheFile(name, base64)
                 val uri = FileProvider.getUriForFile(this@OverlayService, "$packageName.files", file)
                 val send = Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri)
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 send.clipData = ClipData.newRawUri(file.name, uri) // carries the grant to the chosen app
                 startActivity(Intent.createChooser(send, "Share ${file.name}").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }.onFailure { Log.w(TAG, "share failed: $it") }
+            }.onFailure { failedFile("Not shared", it) }
+        }.let {}
+
+        // The same file to Android's Save dialog, so it lands on the tablet (SaveActivity writes it).
+        @JavascriptInterface fun save(name: String, mime: String, base64: String) = main.post {
+            runCatching {
+                val file = cacheFile(name, base64)
+                startActivity(Intent(this@OverlayService, SaveActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(SaveActivity.EXTRA_NAME, file.name).putExtra(SaveActivity.EXTRA_MIME, mime).putExtra(SaveActivity.EXTRA_PATH, file.path))
+            }.onFailure { failedFile("Not saved", it) }
         }.let {}
 
         @JavascriptInterface fun setDisplay(mode: String) = main.post {

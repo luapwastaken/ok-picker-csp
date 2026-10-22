@@ -2,15 +2,10 @@
 // that CSP imports into its Color Set palette.
 import { useEffect, useState } from 'react';
 import { X } from '@phosphor-icons/react';
-import { writeAco } from 'dt:shared/palette/writers.ts';
-import type { Swatch } from 'dt:shared/types.ts';
-import { bridge } from '../bridge.ts';
 import { Chips, PartHead } from './chips.tsx';
-import { removeKept, useKept } from './kept-store.ts';
+import { exportColourSet, removeKept, useKept } from './kept-store.ts';
 import type { PartProps } from './types.ts';
 import './gradient.css';
-
-const base64 = (b: Uint8Array) => { let s = ''; for (const x of b) s += String.fromCharCode(x); return btoa(s); };
 
 export function KeptPart(p: PartProps) {
   const rows = useKept();
@@ -20,11 +15,6 @@ export function KeptPart(p: PartProps) {
     const t = setTimeout(() => setArmed(null), 3000);
     return () => clearTimeout(t);
   }, [armed]);
-
-  const exportAco = () => {
-    const swatches: Swatch[] = rows.flatMap((r) => r.colours.map((oklch, i): Swatch => ({ id: `${r.id}-${i}`, name: `${r.name} · ${i + 1}`, role: null, oklch, type: 'process' })));
-    bridge.share('OK Picker colours.aco', 'application/octet-stream', base64(writeAco(swatches)));
-  };
 
   return (
     <div className="gr kept">
@@ -42,7 +32,12 @@ export function KeptPart(p: PartProps) {
           <Chips chips={r.colours.map((oklch) => ({ oklch }))} current={p.value} onPick={p.set} label={r.name} />
         </div>
       ))}
-      {rows.length > 0 && <button type="button" className="gbtn gwide" onClick={exportAco}>Export colour set…</button>}
+      {rows.length > 0 && (
+        <div className="kexport">
+          <button type="button" className="gbtn gwide" onClick={() => exportColourSet('save')}>Save colour set…</button>
+          <button type="button" className="gbtn" onClick={() => exportColourSet('share')}>Share…</button>
+        </div>
+      )}
     </div>
   );
 }

@@ -107,9 +107,12 @@ for (const [name, w, h, compact] of [['full', 340, 900, false], ['compact', 260,
   await page.screenshot({ path: `${out}/${name}-kept.png`, fullPage: true });
 
   // export
-  await page.evaluate(() => [...document.querySelectorAll('.kept .gwide')].find((b) => b.textContent.startsWith('Export')).click());
+  await page.evaluate(() => [...document.querySelectorAll('.kexport button')].find((b) => b.textContent.startsWith('Share')).click());
   await wait(200);
-  const sh = (await calls(page, 'share')).pop();
+  ok(`${name}: Share sends the set to the share sheet`, (await calls(page, 'share')).length === 1);
+  await page.evaluate(() => [...document.querySelectorAll('.kexport button')].find((b) => b.textContent.startsWith('Save')).click());
+  await wait(200);
+  const sh = (await calls(page, 'save')).pop();
   const bytes = sh ? Buffer.from(sh.args[2], 'base64') : Buffer.alloc(0);
   ok(`${name}: export header`, !!sh && sh.args[0] === 'OK Picker colours.aco' && bytes.length > 4 && bytes[0] === 0 && bytes[1] === 1, JSON.stringify(sh?.args.slice(0, 2)));
   ok(`${name}: export holds both rows`, bytes.length > 0 && bytes.readUInt16BE(2) === 17, `count ${bytes.length ? bytes.readUInt16BE(2) : '-'}`);
