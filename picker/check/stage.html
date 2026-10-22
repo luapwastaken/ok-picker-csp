@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #303030; }
+  #bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  body.light #bg { filter: invert(1) hue-rotate(180deg) brightness(.97); } /* crude stand-in for CSP's Light theme behind the panel */
+  #win { position: absolute; border: 0; box-shadow: 0 6px 24px rgba(0,0,0,.55); }
+  #win.flat { box-shadow: none; }
+</style>
+<!-- a screenshot of CSP behind the panel, if you have one there (not in the repo); else plain grey -->
+<img id="bg" src="/reference/csp-dark-tablet-2026-10-22.png" onerror="this.remove()">
+<iframe id="win"></iframe>

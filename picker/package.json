@@ -1,0 +1,4 @@
+{"name":"csp-picker-panel","private":true,"type":"module","version":"0.1.0",
+"scripts":{"build":"node build.mjs","shots":"node check/shots.mjs","verify":"node check/verify.mjs"},
+"dependencies":{"@phosphor-icons/react":"^2.1.10","culori":"^4.0.2","react":"^19.2.8","react-dom":"^19.2.8"},
+"devDependencies":{"esbuild":"^0.25.0","puppeteer-core":"^24.0.0"}}

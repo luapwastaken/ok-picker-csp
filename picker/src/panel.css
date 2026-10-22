@@ -1,0 +1,102 @@
+/* The panel frame: CSP's palette title bar, body and a status strip. Tokens only (csp-dark.css / csp-light.css).
+   State is shown by background or ring, never by a coloured bar on one edge. */
+html, body, #root { height: 100%; }
+html { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+body { background: var(--module); }
+button { touch-action: manipulation; cursor: default; }
+
+.frame { position: relative; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: var(--module); box-shadow: inset 0 0 0 1px var(--edge); }
+
+/* title strip: ≡ menu · tab (icon + name) · minimize · close. The tab is the palette's own colour, like CSP's active tab. */
+.title { display: flex; align-items: flex-end; flex: none; height: var(--titlebar-h); background: var(--module-head); touch-action: none; user-select: none; }
+.tb { display: grid; place-items: center; flex: none; width: var(--titlebar-h); height: var(--titlebar-h); color: var(--ink-2); }
+.tb:active { background: var(--well); color: var(--ink); }
+.tab { display: flex; align-items: center; gap: 7px; height: calc(var(--titlebar-h) - 4px); padding: 0 14px 0 10px; border-radius: 3px 3px 0 0; background: var(--module); color: var(--ink); font-weight: 600; font-size: var(--fs-title); white-space: nowrap; }
+.tab svg { color: var(--ink-2); }
+.grow { flex: 1; }
+.frame[data-min] .tab { background: var(--module-head); }
+
+.body { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 26px 14px; }
+
+.status { display: flex; align-items: center; flex: none; gap: 10px; height: var(--statusbar-h); padding: 0 8px 0 10px; background: var(--module-head); color: var(--ink-2); font-size: var(--fs-meta); }
+.boxes { position: relative; flex: none; width: 34px; height: 24px; }
+.boxes i { position: absolute; display: block; border-radius: 50%; box-shadow: 0 0 0 1px var(--edge); }
+.boxes .main { left: 0; top: 0; width: 20px; height: 20px; z-index: 1; }
+.boxes .sub { right: 0; bottom: 0; width: 15px; height: 15px; background-color: var(--well); }
+.boxes i[data-on] { box-shadow: 0 0 0 2px var(--signal); }
+.boxes .main[data-transparent] { background: conic-gradient(var(--tick) 25%, var(--well) 0 50%, var(--tick) 0 75%, var(--well) 0) center / 8px 8px; }
+.st { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st[data-state="disconnected"], .st[data-state="unpaired"] { color: var(--danger); }
+.st[data-busy] { color: var(--ink); }
+.pair { flex: none; height: var(--btn-xs); padding: 0 12px; border-radius: var(--r-ctl); background: var(--well); color: var(--ink); }
+.pair:active { background: var(--raise); }
+
+/* resize edges: wide enough for a finger, drawn as three dots */
+.grip { position: absolute; z-index: 5; touch-action: none; background-repeat: no-repeat; background-size: 5px 5px; }
+.grip[data-edge="left"], .grip[data-edge="right"] {
+  top: var(--titlebar-h); bottom: 20px; width: 20px;
+  background-image: radial-gradient(circle, var(--tick) 1.5px, transparent 2px), radial-gradient(circle, var(--tick) 1.5px, transparent 2px), radial-gradient(circle, var(--tick) 1.5px, transparent 2px);
+  background-position: center calc(50% - 10px), center 50%, center calc(50% + 10px);
+}
+.grip[data-edge="left"] { left: 0; }
+.grip[data-edge="right"] { right: 0; }
+.grip[data-edge="bottom"] {
+  bottom: 0; left: 20px; right: 20px; height: 14px;
+  background-image: radial-gradient(circle, var(--tick) 1.5px, transparent 2px), radial-gradient(circle, var(--tick) 1.5px, transparent 2px), radial-gradient(circle, var(--tick) 1.5px, transparent 2px);
+  background-position: calc(50% - 10px) calc(100% - 3px), 50% calc(100% - 3px), calc(50% + 10px) calc(100% - 3px);
+}
+.grip[data-edge^="bottom"][data-edge$="left"], .grip[data-edge$="right"][data-edge^="bottom"] { bottom: 0; width: 24px; height: 24px; }
+.grip[data-edge="bottomleft"] { left: 0; }
+.grip[data-edge="bottomright"] { right: 0; }
+.frame[data-min] .grip:not([data-edge="left"]):not([data-edge="right"]) { display: none; }
+.frame[data-min] .grip { bottom: 0; }
+
+/* long-press tooltip (standins/Tooltip.tsx) */
+.tip { position: fixed; z-index: 1000; transform: translateX(-50%); max-width: 240px; padding: 7px 11px; border-radius: 3px; background: var(--tip); color: var(--tip-ink); font-size: 13px; line-height: 1.2; pointer-events: none; box-shadow: 0 2px 8px var(--shadow), 0 0 0 1px var(--edge); }
+
+/* a touch screen has no hover: build.mjs moves every :hover rule under (hover: hover), so nothing stays lit after a tap */
+
+/* the title's label gives way to the icon alone when the panel is narrow */
+.title { container-type: inline-size; }
+@container (max-width: 239px) { .tab span { display: none; } .tab { padding: 0 10px; } }
+
+/* ── compact mode: the active style's control, then one strip. Everything scales from the body's width. ── */
+.frame[data-compact] .cbody { padding: 8px 22px 10px; }
+.cmain { container-type: inline-size; }
+.cin { display: flex; flex-direction: column; min-width: 0; --sb-min: calc(100cqw * .9); --sb-h: calc(100cqw * .9); --plane-min: calc(100cqw * .78); --plane-h: calc(100cqw * .78); }
+.cmain[data-style="wheel"] .cin > div { --wheel: 100cqw; --ring: calc(100cqw * .0862); --sb: calc(100cqw * .552); margin-bottom: 0; }
+/* the OKLCH plane keeps its switch row; the caption text and legend go */
+.cmain[data-style="oklch"] .cin > :nth-child(2) { margin-left: 0; }
+.cmain[data-style="oklch"] .cin > :nth-child(2) > span { display: none; }
+.cchans { margin-top: 8px; }
+.crow { display: grid; grid-template-columns: 14px minmax(0, 1fr); align-items: center; gap: 8px; height: 30px; }
+.crow .lbl { text-align: center; }
+
+.cstrip { flex: none; padding: 6px 8px 22px; background: var(--module-head); color: var(--ink-2); font-size: var(--fs-meta); }
+.crow1 { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+.chex { position: relative; flex: 1 1 0; min-width: 0; }
+.chex .lbl, .chex > div > div > span:first-child { display: none; }
+.chex > div > div { padding-left: 8px; }
+.chex input { min-width: 0; }
+.chex:has(.cwarn) input { margin-right: 24px; }
+.cwarn { position: absolute; right: 0; top: 0; display: grid; place-items: center; width: 32px; height: 100%; color: var(--ink); }
+.cstate { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 2px; }
+.cstate span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cstate[data-state="bad"] span { color: var(--danger); }
+.cstate[data-state="busy"] span { color: var(--ink); }
+.cstrip .boxes[data-state="bad"] i[data-on] { box-shadow: 0 0 0 2px var(--danger); }
+.cstrip .boxes[data-state="busy"] i[data-on], .cstrip .boxes[data-state="connecting"] i[data-on] { box-shadow: 0 0 0 2px var(--tick-strong); }
+/* the side grips stop above the strip so they never sit over its buttons */
+.frame[data-compact]:not([data-min]) .grip[data-edge="left"], .frame[data-compact]:not([data-min]) .grip[data-edge="right"] { bottom: 68px; }
+.frame[data-compact]:not([data-min]):has(.cstate) .grip[data-edge="left"], .frame[data-compact]:not([data-min]):has(.cstate) .grip[data-edge="right"] { bottom: 100px; }
+/* OKLCH plane: every other x tick goes, so ".20" and ".25" don't run together */
+.cmain[data-style="oklch"] .cin > :first-child > :last-child span:nth-child(even) { display: none; }
+
+/* compact hold row: V / H latched by a background change, Match, eyedropper, then the Value field */
+.chold { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.chold1 { display: flex; gap: 6px; }
+.cbtn { display: grid; place-items: center; flex: 1 1 0; min-width: 32px; height: 34px; border-radius: var(--r-ctl); background: var(--well); color: var(--ink-2); font-weight: 600; font-size: var(--fs-base); }
+.cbtn:active { background: var(--raise); }
+.cbtn[aria-pressed="true"] { background: var(--raise-hover); color: var(--ink); box-shadow: inset 0 0 0 1px var(--tick-strong); }
+.cvalue { display: block; min-width: 0; }
+.cnote { color: var(--ink-3); font-size: var(--fs-meta); }

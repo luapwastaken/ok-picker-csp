@@ -1,0 +1,49 @@
+/* CSP "Dark" theme. Sampled from a screenshot of CSP 5.1.4 on a Galaxy Tab S8:
+   page #303030 (canvas surround) · dock #444444 · menu/tab strip #535353 · title strip #3d3d3d · field #5d5d5d
+   selection #667086 (G-pen row, brush-size cell) · active toolbar button #9196a0 · text #dfdfdf · divider #3d3d3d */
+:root[data-theme="dark"], [data-theme="dark"] {
+  color-scheme: dark;
+  --page: #303030;
+  --ground: #444444;
+  --module: #535353;
+  --module-head: #3d3d3d;
+  --well: #5d5d5d;
+  --well-hover: #686868;
+  --raise: #667086;
+  --raise-hover: #75809a;
+  --press: #5a6378;
+  --line: rgba(255, 255, 255, .08);
+  --tick: #7c7c7c;
+  --tick-strong: #b4b4b4;
+  --ink: #dfdfdf;
+  --ink-2: #c6c6c6;
+  --ink-3: #a4a4a4;
+  --ink-4: #7a7a7a;
+  --signal: #9eabc9;
+  --signal-soft: rgba(102, 112, 134, .35);
+  --signal-ring: rgba(158, 171, 201, .5);
+  --signal-ink: #1e1e1e;
+  --danger: #ff9a92;
+  --danger-soft: rgba(230, 90, 80, .2);
+  --danger-hover: rgba(230, 90, 80, .3);
+  --danger-ink: #1e1e1e;
+  --ok: #8fd19e;
+  --primary: #667086;
+  --primary-hover: #75809a;
+  --primary-ink: #ffffff;
+  --pasteboard: #303030;
+  --popover: #4a4a4a;
+  --popover-hot: #667086;
+  --tip: #262626;
+  --tip-ink: #e8e8e8;
+  --shadow: rgba(0, 0, 0, .55);
+  --highlight: rgba(255, 255, 255, .05);
+  --scrim: rgba(0, 0, 0, .45);
+  --edge: rgba(0, 0, 0, .42);
+  --on-content-bg: rgba(0, 0, 0, .38);
+  --on-content-ink: rgba(255, 255, 255, .92);
+  --on-content-ink-2: rgba(255, 255, 255, .72);
+  --on-content-select: rgba(255, 255, 255, .16);
+  --cross: #ffffff;
+  --cross-halo: rgba(0, 0, 0, .6);
+}

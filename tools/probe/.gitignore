@@ -1,0 +1,5 @@
+conn.json
+node_modules/
+*.bin
+*.log
+*.png

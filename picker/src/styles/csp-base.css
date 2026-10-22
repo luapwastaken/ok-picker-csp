@@ -1,0 +1,32 @@
+/* Non-colour tokens shared by both CSP looks: type and touch geometry.
+   Measured from a Galaxy Tab S8's CSP (2560x1600 @ 340dpi = 2.125x): its rows, buttons and tool icons
+   are 34-40 CSS px, its palette title strip about 22 (we use 32 so the menu/close targets are real touch targets). */
+:root {
+  --font-sans: Roboto, "Noto Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: Roboto, "Noto Sans", "Segoe UI", system-ui, sans-serif; /* CSP shows numbers in its UI sans */
+
+  --fs-meta: 12.5px; --fs-base: 14px; --fs-ctl: 14px; --fs-row: 14px; --fs-swatch: 14px; --fs-title: 14px;
+  --fs-label: 12.5px; --fs-caps: 12px; --fs-mod-title: 12px; --fs-mod-sub: 12px; --fs-unit: 12px;
+  --fs-value: 14px; --fs-value-lg: 18px; --tracking-caps: .04em;
+
+  --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 10px; --space-6: 12px; --space-7: 14px; --space-8: 18px;
+
+  --row: 40px; --ctl: 36px;
+  --r-badge: 2px; --r-ctl: 3px; --r-field: 3px; --r-mod: 0; --r-pop: 4px; --r-pill: 999px;
+  --gap: 6px;
+  --btn-lg: 40px; --btn-xs: 32px;
+  --ib: 38px; --ib-sm: 34px; --ib-xs: 28px;
+  --menu-row: 40px; --toast-h: 44px; --titlebar-h: 32px; --statusbar-h: 32px;
+
+  --shadow-popover: 0 4px 14px var(--shadow);
+  --shadow-dialog: 0 8px 28px var(--shadow);
+  --ring-focus: 0 0 0 1.5px var(--signal);
+
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --t-fast: 90ms; --t-move: 120ms;
+}
+/* the density option in the menu */
+:root[data-density="large"] {
+  --row: 46px; --ctl: 42px; --btn-lg: 46px; --btn-xs: 38px; --ib: 44px; --ib-sm: 40px; --ib-xs: 34px;
+  --menu-row: 46px; --fs-base: 15px; --fs-ctl: 15px; --fs-row: 15px; --fs-value: 15px;
+}
