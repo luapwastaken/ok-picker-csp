@@ -1,0 +1,9 @@
+/* swatch rows (chips.tsx): equal cells across the row, square, a ring on the current colour */
+.chips { display: grid; grid-template-columns: repeat(var(--n, 12), minmax(0, 1fr)); gap: 3px; }
+/* Compact has no headings: the swatch parts keep apart by a margin */
+.frame[data-compact] .pswatch { margin-top: 8px; }
+.chip { aspect-ratio: 1; min-width: 0; min-height: 28px; max-height: 40px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--edge); }
+.chip[data-on] { box-shadow: 0 0 0 2px var(--module), 0 0 0 3.5px var(--ink); position: relative; z-index: 1; }
+.chip:active { transform: scale(.94); }
+.phead { display: flex; align-items: center; gap: 8px; min-height: 22px; margin: 10px 0 4px; }
+.phead .plabel { flex: 1; min-width: 0; }

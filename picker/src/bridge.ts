@@ -5,7 +5,7 @@
 // window.__bridgeCalls, so a test can read what the panel sent.
 
 export type Phase = 'start' | 'move' | 'end';
-export type Edge = 'left' | 'right' | 'bottom' | 'bottomleft' | 'bottomright';
+export type Edge = 'left' | 'right' | 'top' | 'bottom' | 'bottomleft' | 'bottomright';
 export type Display = 'popup' | 'tab';
 
 export type AndroidBridge = {
@@ -18,6 +18,7 @@ export type AndroidBridge = {
   sendReport(): void;
   setDisplay(mode: string): void;
   eyedropper?(on: boolean): void;
+  share?(name: string, mime: string, base64: string): void;
   ready?(): void;
 };
 
@@ -39,7 +40,7 @@ function mock(): AndroidBridge {
     if (fn !== 'setColor' && fn !== 'dragTitle' && fn !== 'resize') console.log('[mock bridge]', fn, ...args);
   };
   return Object.fromEntries(
-    ['setColor', 'copy', 'frame', 'dragTitle', 'resize', 'pair', 'sendReport', 'setDisplay', 'eyedropper', 'ready'].map((k) => [k, rec(k)]),
+    ['setColor', 'copy', 'frame', 'dragTitle', 'resize', 'pair', 'sendReport', 'setDisplay', 'eyedropper', 'share', 'ready'].map((k) => [k, rec(k)]),
   ) as AndroidBridge;
 }
 
@@ -68,5 +69,7 @@ export const bridge = {
   setDisplay: (mode: Display) => call('setDisplay', mode),
   /** true: hold Alt in CSP so its brush becomes the eyedropper (the user taps the canvas); false: release it */
   eyedropper: (on: boolean) => call('eyedropper', on),
+  /** a file through Android's share sheet (a colour set for CSP): its bytes as base64 */
+  share: (name: string, mime: string, base64: string) => call('share', name, mime, base64),
   ready: () => call('ready'),
 };

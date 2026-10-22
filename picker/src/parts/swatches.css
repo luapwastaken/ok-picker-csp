@@ -1,0 +1,6 @@
+/* Harmonies: a label column then the row; Compact drops the label (it stays as the row's tooltip) */
+.hrows { display: grid; gap: 4px; }
+.hrow { display: grid; grid-template-columns: 5.2em minmax(0, 1fr); align-items: center; gap: 6px; }
+.hrow .hlbl { color: var(--ink-3); font-size: var(--fs-meta); }
+.hrow .chips { grid-template-columns: repeat(var(--n, 5), 30px); }
+.hrows[data-layout='compact'] .hrow { grid-template-columns: minmax(0, 1fr); }

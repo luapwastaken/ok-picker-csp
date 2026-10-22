@@ -49,20 +49,40 @@ The panel:
 
 - Drag the title bar to move it anywhere. Drop it with your finger on the square (which lights up) to dock it beside the square again.
 - Minimize (the dash) rolls it up to the title bar. The close button hides everything; bring it back with Show in the notification.
-- Drag the resize grips on its edges to change its size.
-- The compact button in the title bar (or ≡, Display, Compact) switches to a smaller panel with the same controls.
+- Drag the resize grips on its edges to change its size. A floating panel also resizes from the top edge. In the full panel the colour area grows into the height you give it.
+- The compact button in the title bar (or ≡, Display, Compact) switches between the full and the compact panel. Each one remembers its own parts and size.
+- **G** in the title bar shows the panel in grey, to judge values.
 - The ≡ menu holds:
   - **Style**: Square, Wheel, Sliders or OKLCH.
   - **Model**: HSB, RGB, HSL, CMYK (approximate) or OKLCH.
   - **Copy as**: the format used by the copy button.
+  - **Panel parts…**: which parts the panel shows and in what order (below).
   - **Display**: Pop-up (hides when you tap outside it), Keep open, or Compact.
-  - **Look**: Dark or Light, and Regular or Large controls.
+  - **Look**: Dark or Light, and Small, Regular or Large controls.
   - **Pair with CSP…** and **Send report**.
 - **Hold value** (V) keeps lightness fixed while you change other things. **Hold hue** (H) keeps the hue fixed.
 - The eyedropper button uses CSP's own eyedropper: tap it, then tap the canvas.
-- The hex field shows the colour, and the copy button copies it.
+- The hex field shows the colour, and the copy button copies it. The small swatch left of it is the previous colour: tap it to go back, tap again to swap.
 - The swatch at the bottom shows CSP's main and sub colours. The picker follows whichever is active in CSP.
 - **Send report** shares a log (with passwords removed) through the share sheet, for bug reports.
+
+### Panel parts
+
+≡, Panel parts… lists the parts. Tick a part to show it, and drag its handle to move it. Full, Compact and Minimal reset the list to a starting point. Done closes the list.
+
+- **Style switch**, **Colour area**, **Number fields**, **Hold value and hue**, **Hex, eyedropper, copy**: the panel as it was in 1.0.
+- **Sliders**: slider rows under the colour area, for one or more of HSB, RGB, HSL, OKLCH and CMYK.
+- **Recent colours**: the last 12 colours, from the panel and from CSP. Tap one to use it.
+- **Tints**: nine lighter and darker versions of the current colour.
+- **Harmonies**: complementary, analogous, triad, split and tetrad colours.
+- **Gradient and ramp**: see below.
+- **Kept colours**: gradients and ramps you kept, and Export colour set.
+
+### Gradient and ramp
+
+- **Gradient**: a smooth OKLab blend between two colours. The ends start as CSP's main and sub colour; tap an end to set it from the current, main or sub colour. Drag along the bar to mix live, or tap a step. ⋯ has the number of steps, the path (straight through OKLab, or round the hue wheel the short or long way), swap ends and the midpoint. Drag the ◆ under the bar to push the blend toward one end.
+- **Ramp**: from one colour, a highlight-to-shadow ramp that warms toward the light and cools into the shadow, with even value steps.
+- **Keep** saves the steps to Kept colours. **Export colour set…** there sends an `.aco` file through the share sheet; save it, then in CSP's Color Set palette use Import color set.
 
 Colours you change in CSP's own colour panel, Color Set, history or eyedropper update the picker. The picker starts by itself when the tablet starts. With Usage access on, it shows only while CSP is in front.
 
@@ -99,6 +119,8 @@ cd android
 ```
 
 Release signing: `./gradlew assembleRelease` signs with the key named in a properties file outside the repo (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`), whose path is the Gradle property `okpicker.signing` (for example in `~/.gradle/gradle.properties`). Without it the release APK is unsigned.
+
+`./gradlew assembleQa` builds a release-signed, debuggable APK (installs over the release build, keeps its data) for device testing with WebView DevTools; it needs the same signing setup as release.
 
 Tests:
 

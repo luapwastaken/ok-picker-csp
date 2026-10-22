@@ -61,7 +61,7 @@ button { touch-action: manipulation; cursor: default; }
 @container (max-width: 239px) { .tab span { display: none; } .tab { padding: 0 10px; } }
 
 /* ── compact mode: the active style's control, then one strip. Everything scales from the body's width. ── */
-.frame[data-compact] .cbody { padding: 8px 22px 10px; }
+.frame[data-compact] .body { padding: 8px 22px 10px; }
 .cmain { container-type: inline-size; }
 .cin { display: flex; flex-direction: column; min-width: 0; --sb-min: calc(100cqw * .9); --sb-h: calc(100cqw * .9); --plane-min: calc(100cqw * .78); --plane-h: calc(100cqw * .78); }
 .cmain[data-style="wheel"] .cin > div { --wheel: 100cqw; --ring: calc(100cqw * .0862); --sb: calc(100cqw * .552); margin-bottom: 0; }
@@ -72,31 +72,81 @@ button { touch-action: manipulation; cursor: default; }
 .crow { display: grid; grid-template-columns: 14px minmax(0, 1fr); align-items: center; gap: 8px; height: 30px; }
 .crow .lbl { text-align: center; }
 
-.cstrip { flex: none; padding: 6px 8px 22px; background: var(--module-head); color: var(--ink-2); font-size: var(--fs-meta); }
-.crow1 { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+.crow1 { display: flex; align-items: center; gap: 6px; min-height: 40px; margin-top: 8px; }
 .chex { position: relative; flex: 1 1 0; min-width: 0; }
 .chex .lbl, .chex > div > div > span:first-child { display: none; }
 .chex > div > div { padding-left: 8px; }
 .chex input { min-width: 0; }
 .chex:has(.cwarn) input { margin-right: 24px; }
 .cwarn { position: absolute; right: 0; top: 0; display: grid; place-items: center; width: 32px; height: 100%; color: var(--ink); }
-.cstate { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 2px; }
-.cstate span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cstate[data-state="bad"] span { color: var(--danger); }
-.cstate[data-state="busy"] span { color: var(--ink); }
-.cstrip .boxes[data-state="bad"] i[data-on] { box-shadow: 0 0 0 2px var(--danger); }
-.cstrip .boxes[data-state="busy"] i[data-on], .cstrip .boxes[data-state="connecting"] i[data-on] { box-shadow: 0 0 0 2px var(--tick-strong); }
-/* the side grips stop above the strip so they never sit over its buttons */
-.frame[data-compact]:not([data-min]) .grip[data-edge="left"], .frame[data-compact]:not([data-min]) .grip[data-edge="right"] { bottom: 68px; }
-.frame[data-compact]:not([data-min]):has(.cstate) .grip[data-edge="left"], .frame[data-compact]:not([data-min]):has(.cstate) .grip[data-edge="right"] { bottom: 100px; }
+.status .boxes[data-state="bad"] i[data-on] { box-shadow: 0 0 0 2px var(--danger); }
+.status .boxes[data-state="busy"] i[data-on], .status .boxes[data-state="connecting"] i[data-on] { box-shadow: 0 0 0 2px var(--tick-strong); }
 /* OKLCH plane: every other x tick goes, so ".20" and ".25" don't run together */
 .cmain[data-style="oklch"] .cin > :first-child > :last-child span:nth-child(even) { display: none; }
 
 /* compact hold row: V / H latched by a background change, Match, eyedropper, then the Value field */
 .chold { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .chold1 { display: flex; gap: 6px; }
-.cbtn { display: grid; place-items: center; flex: 1 1 0; min-width: 32px; height: 34px; border-radius: var(--r-ctl); background: var(--well); color: var(--ink-2); font-weight: 600; font-size: var(--fs-base); }
+.cbtn { display: grid; place-items: center; flex: 1 1 0; min-width: 32px; height: calc(var(--ctl) - 2px); border-radius: var(--r-ctl); background: var(--well); color: var(--ink-2); font-weight: 600; font-size: var(--fs-base); }
 .cbtn:active { background: var(--raise); }
 .cbtn[aria-pressed="true"] { background: var(--raise-hover); color: var(--ink); box-shadow: inset 0 0 0 1px var(--tick-strong); }
 .cvalue { display: block; min-width: 0; }
 .cnote { color: var(--ink-3); font-size: var(--fs-meta); }
+
+/* ── parts (PLAN: Panel parts). Full: the window is sized by hand and the colour area takes what is left of its height;
+   Compact: everything scales from the width and the window's height follows (main.tsx fit). ── */
+.parts { min-width: 0; container: parts / inline-size; }
+.frame:not([data-compact]) .parts { min-height: 100%; }
+/* the area takes the height the other parts leave (from nothing, so it can shrink back), never less than it needs */
+.parea { display: flex; flex-direction: column; flex: 1 1 0; min-height: min-content; }
+.parea[data-style="sliders"] { flex: none; }
+/* the wheel: --pwheel is the smaller of the area's width and height (core.tsx measures it) */
+.parea[data-style="wheel"] { min-height: 200px; justify-content: center; }
+.parea[data-style="wheel"] > div { --wheel: var(--pwheel, 232px); --ring: calc(var(--wheel) * .0862); --sb: calc(var(--wheel) * .552); margin-bottom: 0; }
+.psliders { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.pset { display: flex; flex-direction: column; min-width: 0; }
+.pset > div { margin-top: 0; }
+.plabel { color: var(--ink-3); font: 500 var(--fs-caps)/1 var(--font-sans); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+.phex { margin-top: 10px; }
+.phex .lbl { display: none; }
+.copynarrow { display: none; }
+/* a narrow panel: the number fields wrap under the model menu, and copy is one button (≡ → Copy as picks the format) */
+@container parts (max-width: 259px) {
+  .parts div[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: row; }
+  .parts div[data-n="3"] > :first-child { grid-column: 1 / -1; width: auto; }
+  .copywide { display: none; }
+  .copynarrow { display: contents; }
+}
+/* very narrow: two number fields a row, and the hex row's buttons go under the field */
+@container parts (max-width: 199px) {
+  .parts div[data-n="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .phex { flex-wrap: wrap; justify-content: flex-end; }
+  .phex > div { flex: 1 1 calc(100% - 40px); }
+}
+.frame[data-compact] .parts > :first-child { margin-top: 0; }
+
+/* C2: the previous colour, left of the hex field; a tap goes back */
+.prev { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: var(--r-ctl); color: rgba(255, 255, 255, .85); box-shadow: inset 0 0 0 1px var(--edge); }
+.prev svg { filter: drop-shadow(0 0 1px rgba(0, 0, 0, .8)); }
+.phex .prev { align-self: center; }
+
+/* D3: G greys the panel body with the value measure (Rec. 709 luma of the shown sRGB) */
+.body[data-grey] { filter: url(#okp-grey); }
+.tb.tg { font-weight: 700; font-size: 13px; }
+.tb.tg[aria-pressed="true"] { background: var(--raise-hover); color: var(--ink); }
+
+/* a floating panel's top edge: a thin band over the title's top, between its buttons */
+.grip[data-edge="top"] { top: 0; left: var(--titlebar-h); right: calc(var(--titlebar-h) * 4); height: 7px; }
+
+/* ≡ → Panel parts: over the body and the status strip until Done */
+.sheet { position: absolute; left: 0; right: 0; top: var(--titlebar-h); bottom: 0; z-index: 20; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--module); }
+.sheethead { display: flex; align-items: center; gap: 8px; padding: 8px 10px 4px 14px; font-weight: 600; }
+.sheethead span { flex: 1; min-width: 0; }
+.presets { display: flex; gap: 6px; padding: 4px 14px 8px; }
+.plist { display: flex; flex-direction: column; padding: 0 8px 12px; }
+.prow { display: flex; align-items: flex-start; gap: 4px; padding: 2px 0; border-radius: var(--r-ctl); }
+.pgrip { display: grid; place-items: center; flex: none; width: 30px; height: var(--ctl); color: var(--ink-3); touch-action: none; }
+.pmain { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; padding-bottom: 4px; }
+.phint { color: var(--ink-3); font-size: var(--fs-meta); margin: -6px 0 0 24px; }
+.psets { display: flex; flex-wrap: wrap; gap: 4px; margin-left: 24px; }
+.psets .cbtn { flex: none; padding: 0 10px; height: var(--btn-xs); font-size: var(--fs-meta); }

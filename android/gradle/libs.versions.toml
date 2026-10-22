@@ -5,10 +5,12 @@ kotlin = "2.4.21"
 junit = "4.13.2"
 orgJson = "20240303"
 zxing = "3.5.3"
+androidxCore = "1.15.0"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
 org-json = { module = "org.json:json", version.ref = "orgJson" }
+androidx-core = { module = "androidx.core:core", version.ref = "androidxCore" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 [plugins]

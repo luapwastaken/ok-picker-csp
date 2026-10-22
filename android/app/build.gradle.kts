@@ -18,8 +18,8 @@ android {
         applicationId = "com.luap.okpicker"
         minSdk = 33
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     signingConfigs {
@@ -34,6 +34,13 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.findByName("release")
+        }
+        // Device QA with WebView DevTools without uninstalling the release: same key, so it installs over it.
+        create("qa") {
+            initWith(getByName("release"))
+            isDebuggable = true
+            signingConfig = signingConfigs.findByName("release")
+            matchingFallbacks += "release"
         }
     }
 
@@ -55,4 +62,5 @@ kotlin {
 dependencies {
     implementation(project(":cspremote"))
     implementation(libs.zxing.core)
+    implementation(libs.androidx.core)
 }

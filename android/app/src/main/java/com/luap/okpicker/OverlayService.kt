@@ -20,6 +20,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.Base64
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -33,6 +34,7 @@ import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import androidx.core.content.FileProvider
 import com.luap.cspremote.ColorState
 import com.luap.cspremote.ConnectionState
 import com.luap.cspremote.CspClient
@@ -40,6 +42,7 @@ import com.luap.cspremote.CspListener
 import com.luap.cspremote.QrConfig
 import com.luap.cspremote.Swatch
 import org.json.JSONObject
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -471,7 +474,7 @@ class OverlayService : Service(), CspListener {
         val dx = (e.rawX - downX).toInt()
         val dy = (e.rawY - downY).toInt()
         val (x0, y0, w0, h0) = startLp.toList()
-        val minW = (260 * dp).toInt()
+        val minW = (200 * dp).toInt()
         val minH = (200 * dp).toInt()
         if (g == "move") {
             if (!floating && abs(dx) + abs(dy) < 12 * dp) return
@@ -483,7 +486,12 @@ class OverlayService : Service(), CspListener {
         } else {
             if ("left" in g) { panelLp.width = (w0 - dx).coerceAtLeast(minW); panelLp.x = x0 + w0 - panelLp.width }
             if ("right" in g) panelLp.width = (w0 + dx).coerceAtLeast(minW)
-            if ("bottom" in g) panelLp.height = (h0 + dy).coerceAtLeast(minH)
+            if ("bottom" in g && !compact) panelLp.height = (h0 + dy).coerceAtLeast(minH) // compact keeps fitH
+            if ("top" in g && !compact) { // the bottom stays put; the top may not leave the screen
+                val bottom = y0 + h0
+                panelLp.height = (h0 - dy).coerceIn(minH, (bottom - screen.top).coerceAtLeast(minH))
+                panelLp.y = bottom - panelLp.height
+            }
         }
         wm.updateViewLayout(panel, panelLp)
     }
@@ -555,6 +563,22 @@ class OverlayService : Service(), CspListener {
 
         @JavascriptInterface fun resize(edge: String, phase: String, x: Double, y: Double) = main.post { if (phase == "start" && touching) gesture = edge }.let {}
 
+        // A file from the page (an .aco colour set) to the share sheet, via the cache + FileProvider.
+        @JavascriptInterface fun share(name: String, mime: String, base64: String) = main.post {
+            runCatching {
+                if (base64.length > MAX_SHARE * 4 / 3 + 8) error("over ${MAX_SHARE / 1024} KB")
+                val bytes = Base64.decode(base64, Base64.DEFAULT)
+                if (bytes.size > MAX_SHARE) error("over ${MAX_SHARE / 1024} KB")
+                val dir = File(cacheDir, "share").apply { deleteRecursively(); mkdirs() } // only the latest file stays
+                val file = File(dir, name.replace(Regex("[^A-Za-z0-9._-]"), "_").trimStart('.').ifEmpty { "file" }).apply { writeBytes(bytes) }
+                val uri = FileProvider.getUriForFile(this@OverlayService, "$packageName.files", file)
+                val send = Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                send.clipData = ClipData.newRawUri(file.name, uri) // carries the grant to the chosen app
+                startActivity(Intent.createChooser(send, "Share ${file.name}").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.onFailure { Log.w(TAG, "share failed: $it") }
+        }.let {}
+
         @JavascriptInterface fun setDisplay(mode: String) = main.post {
             this@OverlayService.mode = mode
             ui.edit().putString("display", mode).apply()
@@ -613,6 +637,7 @@ class OverlayService : Service(), CspListener {
         private const val POLL_AWAY = 2000L // CSP not on screen
         private const val ICON_FRAME = 0xFF3D3D3D.toInt()
         private const val ICON_LIT = 0xFF75809A.toInt() // CSP's selected-item blue-grey: let go here to dock
+        private const val MAX_SHARE = 2 * 1024 * 1024
         private const val TAG = "OkPicker"
     }
 }

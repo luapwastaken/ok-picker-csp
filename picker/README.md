@@ -20,9 +20,10 @@ JavaScript and DOM storage on (localStorage keeps style, model, copy format, loo
 | `copy(text)` | text for the clipboard (Copy / Copy as) |
 | `frame(action)` | `minimize`, `restore`, `close`, plus informational `look:dark`, `look:light`, `density:regular`, `density:large` (the panel applies these itself; native may ignore them) |
 | `dragTitle(phase, x, y)` | window move. `phase` is `start`/`move`/`end`; x, y are the pointer's `clientX/clientY` in CSS px at the event. Native: screen point = current window origin + client * density; move the window by the change since `start`. |
-| `resize(edge, phase, x, y)` | same coordinates. `edge`: `left`, `right`, `bottom`, `bottomleft`, `bottomright`. Which edges show depends on `dock` (below): the edge nearest the canvas, and the bottom. |
+| `resize(edge, phase, x, y)` | same coordinates. `edge`: `left`, `right`, `top`, `bottom`, plus corners (`topleft`, `bottomleft`, `bottomright`, ...). `top` moves the window origin so the bottom stays put. Which edges show depends on `dock` (below): the edge nearest the canvas, and the bottom. |
 | `pair()` | the Pair with CSP... menu row and the Pair button |
 | `sendReport()` | the Send report row |
+| `share(name, mime, base64)` | hand a file to Android's share sheet (first use: a `.aco` colour set, `application/octet-stream`, for CSP's Color Set import). Native decodes the base64 (max 2 MB), writes it to the app cache and opens the chooser; bad input is ignored. |
 | `setDisplay(mode)` | `popup` or `tab`, from the menu |
 | `frame('compact:on')` / `frame('compact:off')` | compact mode (title bar, main control, hold row, strip) switched on or off; sent on every change and once at startup after `ready()`. Designed for 200 CSS px wide (min 180). |
 | `frame('fit:<css px>')` | compact only: the natural content height in CSS px; native sizes the window to it (re-sent when it changes) |

@@ -30,3 +30,8 @@
   --row: 46px; --ctl: 42px; --btn-lg: 46px; --btn-xs: 38px; --ib: 44px; --ib-sm: 40px; --ib-xs: 34px;
   --menu-row: 46px; --fs-base: 15px; --fs-ctl: 15px; --fs-row: 15px; --fs-value: 15px;
 }
+/* Small: tighter rows and buttons, the same text */
+:root[data-density="small"] {
+  --row: 34px; --ctl: 30px; --btn-lg: 34px; --btn-xs: 28px; --ib: 32px; --ib-sm: 28px; --ib-xs: 24px;
+  --menu-row: 36px; --titlebar-h: 30px; --statusbar-h: 28px;
+}

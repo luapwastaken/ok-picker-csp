@@ -1,0 +1,40 @@
+/* Gradient and Kept parts: only the panel's tokens, state by background or a full ring */
+.gr { margin-top: 10px; min-width: 0; }
+.ghead { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.gswitch { display: flex; flex: 1; min-width: 0; background: var(--well); border-radius: var(--r-ctl); padding: 2px; gap: 2px; }
+.gswitch button { flex: 1; min-width: 0; height: 28px; border-radius: calc(var(--r-ctl) - 1px); color: var(--ink-2); font-weight: 600; font-size: var(--fs-meta); }
+.gswitch button[aria-checked="true"] { background: var(--raise-hover); color: var(--ink); }
+.gbtn { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 10px; border-radius: var(--r-ctl); background: var(--well); color: var(--ink-2); font-weight: 600; font-size: var(--fs-meta); }
+.gbtn:active { background: var(--raise); }
+.gicon { padding: 0; width: 28px; }
+.gwide { width: 100%; margin-top: 8px; height: 32px; }
+
+.gbarrow { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; }
+.gend { flex: none; width: 28px; height: 36px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--edge); }
+.gend:active { transform: scale(.94); }
+.gcol { flex: 1; min-width: 0; }
+.gbar { position: relative; height: 36px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--edge); touch-action: none; cursor: ew-resize; }
+.gbar:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.gmark { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 2px var(--ink), 0 0 0 3px var(--edge); }
+.gmid { position: relative; height: 28px; touch-action: none; color: var(--ink-3); }
+.gmid span { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 14px; line-height: 1; pointer-events: none; }
+
+.grows { display: flex; flex-direction: column; gap: 6px; }
+.grows .chips { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+.gstrip { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 3px; margin-top: 3px; }
+.gstrip i { height: 5px; border-radius: 1px; }
+
+.gsels { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 4px; margin-bottom: 8px; }
+.gsel { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; height: 38px; padding: 0 8px; text-align: left; min-width: 0; }
+.gsel small { color: var(--ink-3); font-size: 11px; font-weight: 500; line-height: 1; }
+.gdot { display: block; width: 100%; height: 12px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--edge); }
+
+.kept .krow { margin-bottom: 8px; }
+.khead { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.kname { flex: 1; min-width: 0; color: var(--ink-2); font-size: var(--fs-meta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kx { height: 24px; min-width: 28px; padding: 0 6px; }
+.kx[data-armed] { background: var(--danger-soft); color: var(--danger); }
+.kept .chips { grid-template-columns: repeat(auto-fill, minmax(24px, 1fr)); }
+/* chips fill their cell (a row of 5 spans the width, level with the bar and the value strip) */
+.grows .chip { aspect-ratio: auto; height: 34px; max-height: none; }
+.kept .chip { aspect-ratio: auto; height: 24px; max-height: none; }
